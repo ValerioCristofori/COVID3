@@ -11,9 +11,9 @@ Usando i dati della John Hopkins University:
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/2048px-Python-logo-notext.svg.png" width=50px> Python 3.9
 
 ## Esecuzione
-'''bash
+```bash
 python3 main.py
-'''
+```
 
 ## Librerie
 - <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Pandas_mark.svg/1200px-Pandas_mark.svg.png" width=50px> [Pandas](https://pandas.pydata.org/)
