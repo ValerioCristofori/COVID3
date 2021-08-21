@@ -1,17 +1,21 @@
 import petl as etl
 import requests
-import os.path
+import re
 
 from os import path
 from petl import *
 from plots import *
 
+arrayUrls = [
+        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
+        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv',
+        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv']
+index_date = 0
+index_country_name = 0
+
+
 
 def createPetlTables():
-    arrayUrls = [
-        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/archived_time_series/time_series_19-covid-Confirmed_archived_0325.csv',
-        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/archived_time_series/time_series_19-covid-Deaths_archived_0325.csv',
-        'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/archived_data/archived_time_series/time_series_19-covid-Recovered_archived_0325.csv']
     arrayTables = []
 
     with requests.Session() as s:
@@ -39,30 +43,40 @@ def reformatDate(date):
     return '20' + tokens[2] + '/' + month + '/' + day
 
 
+def getIndexHeader(table):
+    global index_country_name
+    global index_date
+    for i in range(len(header(table))):
+        headerValue = header(table)[i]
+        # cerco la l'ultima colonna prima delle date
+        if headerValue == 'Country/Region':
+            break
+    index_country_name = i
+
+    for j in range(len(header(table))):
+        headerValue = header(table)[j]
+        match = re.search(r'(\d+/\d+/\d+)', headerValue)
+        # cerco la l'ultima colonna prima delle date
+        if match:
+            break
+    index_date = j
+
 def parseTables(table, headers):
 
     newTable = [['Country', 'Date', headers[0], headers[1]]]
 
-
-
-    for j in range(len(header(table))):
-        headerValue = header(table)[j]
-        if headerValue == 'Country/Region':
-            break
-
-
     for i in range(1, len(table)):
-        for datecount in range(j + 1, len(header(table))):
+        for datecount in range(index_date, len(header(table))):
             if table[i][datecount] != '':
-                if datecount == j + 1:
-                    newRow = [table[i][j], reformatDate(table[0][datecount]), int(table[i][datecount]), int(table[i][datecount])]
+                if datecount == index_date:
+                    newRow = [table[i][index_country_name], reformatDate(table[0][datecount]), int(table[i][datecount]), int(table[i][datecount])]
                 else:
-                    newRow = [table[i][j], reformatDate(table[0][datecount]),
+                    newRow = [table[i][index_country_name], reformatDate(table[0][datecount]),
                               int(table[i][datecount]), int(table[i][datecount]) - int(table[i][datecount-1])]
                 print( newRow )
-                print(" append " + table[i][j] + " date " + reformatDate(table[0][datecount]))
+                print(" append " + table[i][index_country_name] + " date " + reformatDate(table[0][datecount]))
             else:
-                newRow = [table[i][j], reformatDate(table[0][datecount]), 0, 0]
+                newRow = [table[i][index_country_name], reformatDate(table[0][datecount]), 0, 0]
                 print(newRow)
             newTable.append(newRow)
     # eliminare tutti i duplicati dati dalle regioni differenti dello stesso paese
@@ -86,17 +100,31 @@ def peltToPandas(datasetResult):
     return dataframe
 
 
+def getDataframeScatter(table):
+    if not path.exists('output_scatter.csv'):
+        dataframe = peltToPandas(table)
+        dataframe.to_csv('output_scatter.csv', index=False)
+        lines = open('output_scatter.csv', 'r').readlines()
+        del lines[0]
+        open('output_scatter.csv', 'w').writelines(lines)
+        dataframe = pd.read_csv('output_scatter.csv')
+    else:
+        dataframe = pd.read_csv('output_scatter.csv')
+    return dataframe
+
 
 def getData():
 
-    if not path.exists('output.csv'):
-        header = [ ['Confirmed', 'New Confirmed'], ['Recovered', 'New Recovered'], ['Deaths', 'New Deaths'] ]
-        outputTables = []
+    header = [['Confirmed', 'New Confirmed'], ['Deaths', 'New Deaths'], ['Recovered', 'New Recovered']]
+    outputTables = []
 
-        tables = createPetlTables()
+    tables = createPetlTables()
+    getIndexHeader(tables[0])
+
+    if not path.exists('output.csv'):
+
         for i in range( len(tables) ):
-            table = etl.cutout(tables[i], 'Lat', 'Long')
-            outputTables.append(parseTables(table, header[i]))
+            outputTables.append(parseTables(tables[i], header[i]))
 
         #join tra le tre tabelle
         firstJoinTable = etl.join(outputTables[2], outputTables[1], key=['Country','Date'])
@@ -115,3 +143,5 @@ def getData():
 
 
     buildPlots(dataframe)
+    dataframeScatter = getDataframeScatter(tables[0])
+    buildScatter(dataframeScatter)
