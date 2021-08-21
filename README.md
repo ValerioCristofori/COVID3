@@ -5,10 +5,10 @@ Usando i dati della John Hopkins University:
 ## Configurazione
 ### Ambiente di sviluppo
 
-- [<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi8bE4ncbqUYBr0KHcytPmh3cCgWe7ghWyBoXCn3FMMTkrlxQo-t50JA-yeEDWQEsOyAg&amp;amp;usqp=CAU" width=50px>] Pycharm
+- <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi8bE4ncbqUYBr0KHcytPmh3cCgWe7ghWyBoXCn3FMMTkrlxQo-t50JA-yeEDWQEsOyAg&amp;amp;usqp=CAU" width=50px> Pycharm
 
 ### Linguaggio di programmazione
-- [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/2048px-Python-logo-notext.svg.png" width=50px>] Python 3.9
+- <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/2048px-Python-logo-notext.svg.png" width=50px> Python 3.9
 
 ## Esecuzione
 '''bash
