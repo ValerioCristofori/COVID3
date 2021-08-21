@@ -43,8 +43,7 @@ def parseTables(table, headers):
 
     newTable = [['Country', 'Date', headers[0], headers[1]]]
 
-    # ordino la tabella per country
-    etl.sort(newTable, key='Country/Region')
+
 
     for j in range(len(header(table))):
         headerValue = header(table)[j]
@@ -56,18 +55,23 @@ def parseTables(table, headers):
         for datecount in range(j + 1, len(header(table))):
             if table[i][datecount] != '':
                 if datecount == j + 1:
-                    newRow = [table[i][j], reformatDate(table[0][datecount]), table[i][datecount], table[i][datecount]]
+                    newRow = [table[i][j], reformatDate(table[0][datecount]), int(table[i][datecount]), int(table[i][datecount])]
                 else:
                     newRow = [table[i][j], reformatDate(table[0][datecount]),
-                              table[i][datecount], str(int(table[i][datecount]) - int(table[i][datecount-1]))]
+                              int(table[i][datecount]), int(table[i][datecount]) - int(table[i][datecount-1])]
                 print( newRow )
                 print(" append " + table[i][j] + " date " + reformatDate(table[0][datecount]))
             else:
-                newRow = [table[i][j], reformatDate(table[0][datecount]), '0', '0']
+                newRow = [table[i][j], reformatDate(table[0][datecount]), 0, 0]
                 print(newRow)
             newTable.append(newRow)
     # eliminare tutti i duplicati dati dalle regioni differenti dello stesso paese
-    return etl.rowreduce( newTable, key=['Country','Date'], reducer=doublesumbar, header=['Country', 'Date', headers[0], headers[1]])
+    result = etl.rowreduce( newTable, key=['Country','Date'], reducer=doublesumbar, header=['Country', 'Date', headers[0], headers[1]])
+
+    # ordino la tabella per country
+    etl.sort(result, key=['Country', 'Date'])
+
+    return result
 
 def doublesumbar(key, rows):
     row2 = 0
@@ -75,7 +79,7 @@ def doublesumbar(key, rows):
     for row in rows:
         row2 = row2 + int(row[2])
         row3 = row3 + int(row[3])
-    return [key[0], key[1], str(row2), str(row3)]
+    return [key[0], key[1], row2, row3]
 
 def peltToPandas(datasetResult):
     dataframe = pd.DataFrame(datasetResult)
@@ -100,8 +104,14 @@ def getData():
 
         dataframe = peltToPandas(datasetResult)
         dataframe.to_csv('output.csv', index=False)
-        print(dataframe)
+        # cancello la prima riga del file caricandolo in memoria direttamente
+        # la prima riga 0,1,2,3 e' dovuta alla trasformazione in petl table
+        lines = open('output.csv', 'r').readlines()
+        del lines[0]
+        open('output.csv', 'w').writelines(lines)
+        dataframe = pd.read_csv('output.csv')
     else:
         dataframe = pd.read_csv('output.csv')
+
 
     buildPlots(dataframe)
