@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import datetime as dt
+
+from datetime import datetime
+import numpy as np
 import pandas as pd
 
 def buildPlots(df):
-
-
-    date_range = df.loc[:, 'Date']
 
     # graficare andamento di New Confirmed, New Recovered e New Deaths
     # prendi input del paese da graficare
@@ -12,14 +14,23 @@ def buildPlots(df):
     # if not df[df['Country'].str.contains(country)]:
     #     print("Il nome inserito non e' valido!")
     #     exit(-1)
-    plt.figure(figsize=(20, 10))
-    plt.plot(date_range, df.loc[df['Country'] == country, 'New Confirmed'], label="Andamento dati 'New Confirmed'")
-    plt.plot(date_range, df.loc[df['Country'] == country, 'New Recovered'], label="Andamento dati 'New Recovered'")
-    plt.plot(date_range, df.loc[df['Country'] == country, 'New Deaths'], label="Andamento dati 'New Deaths'")
-    plt.show()
+    df_country = df[df['Country'] == country]
+    x = df_country.loc[:, 'Date']
 
+    fig, ax = plt.subplots()
 
-    # graficare andamento di New Deaths rispetto le date
-    plt.figure(figsize=(20,10))
-    plt.plot(date_range, df.loc[:,'New Deaths'], label="Andamento New Deaths")
+    ax.plot( x, df_country.loc[:, 'New Confirmed'], "-g", label="New Confirmed")
+    ax.plot( x, df_country.loc[:, 'New Recovered'], "-b", label="New Recovered")
+    ax.plot( x, df_country.loc[:, 'New Deaths'], "-r", label="New Deaths")
+
+    # Ogni 7 giorni inserisco la label nell'asse x
+    fmt_half_year = mdates.DayLocator(interval=7)
+    ax.xaxis.set_major_locator(fmt_half_year)
+
+    plt.legend()
+    plt.title("Andamento di %s " %(country), color="black")
+    plt.grid(color="grey")
+    plt.ylabel("Totale", color="black")
+    plt.xlabel("Data", color="black")
+
     plt.show()
