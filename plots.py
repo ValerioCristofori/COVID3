@@ -11,9 +11,9 @@ color_label = "black"
 min_date = '2020/01/22'
 max_date = '2020/03/23'
 
-def groupDateForDays(ax, days):
+def groupDateForMonths(ax, months):
     # Ogni 7 giorni inserisco la label nell'asse x
-    fmt_half_year = mdates.DayLocator(interval=days)
+    fmt_half_year = mdates.MonthLocator(interval=months)
     ax.xaxis.set_major_locator(fmt_half_year)
 
 
@@ -34,7 +34,7 @@ def plotNews(df):
     ax.plot( x, df_country.loc[:, 'New Recovered'], "-b", label="New Recovered")
     ax.plot( x, df_country.loc[:, 'New Deaths'], "-r", label="New Deaths")
 
-    groupDateForDays(ax, 7)
+    groupDateForMonths(ax, 1)
 
     plt.legend()
     plt.title("Andamento di %s " % country, color="black")
@@ -62,7 +62,7 @@ def plotNewDeathsGlobalTrend(df):
     fig, ax = plt.subplots()
 
     ax.plot(x, y, "-b", label="New Deaths")
-    groupDateForDays(ax, 7)
+    groupDateForMonths(ax, 1)
 
     plt.legend()
     plt.title("Andamento dei Nuovi Morti globali ", color="black")
@@ -87,7 +87,7 @@ def buildScatter(df):
     y = []
     area = []
     np.random.seed(19680801)
-    colors = np.random.rand(501)
+    colors = np.random.rand(279)
     df_date = df.filter(items=[ 'Country/Region', 'Long', 'Lat', date])
     print(df_date)
     for row in range(0, len(df_date)):

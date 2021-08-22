@@ -27,6 +27,7 @@ def createPetlTables():
             csv_file.write(url_content)
             arrayTables.append(etl.fromcsv(filename))
 
+
     return arrayTables
 
 '''
@@ -69,12 +70,29 @@ def parseTables(table, headers):
         for datecount in range(index_date, len(header(table))):
             if table[i][datecount] != '':
                 if datecount == index_date:
+                    last_value = int(table[i][datecount])
                     newRow = [table[i][index_country_name], reformatDate(table[0][datecount]), int(table[i][datecount]), int(table[i][datecount])]
                 else:
+                    # controllo se la entry ha valore minore di quella precedente
+                    sub = int(table[i][datecount]) - last_value
+                    if sub < 0:
+                        # il dataset risulta inesatto
+                        # la entry successiva ha valori minori di quella precedente
+                        # value sono i 'confirmed' o 'deaths' o 'recovered' totali
+                        value = last_value
+                        # new value e' il valore dei rispettivi nuovi
+                        newValue = 0
+
+                        last_value = int(table[i][datecount-1])
+                    else:
+                        value = int(table[i][datecount])
+                        last_value = value
+                        newValue = sub
+
                     newRow = [table[i][index_country_name], reformatDate(table[0][datecount]),
-                              int(table[i][datecount]), int(table[i][datecount]) - int(table[i][datecount-1])]
+                              value, newValue]
+
                 print( newRow )
-                print(" append " + table[i][index_country_name] + " date " + reformatDate(table[0][datecount]))
             else:
                 newRow = [table[i][index_country_name], reformatDate(table[0][datecount]), 0, 0]
                 print(newRow)
@@ -127,7 +145,7 @@ def getData():
             outputTables.append(parseTables(tables[i], header[i]))
 
         #join tra le tre tabelle
-        firstJoinTable = etl.join(outputTables[2], outputTables[1], key=['Country','Date'])
+        firstJoinTable = etl.join(outputTables[1], outputTables[2], key=['Country','Date'])
         datasetResult = etl.join(outputTables[0], firstJoinTable, key=['Country', 'Date'])
 
         dataframe = peltToPandas(datasetResult)
