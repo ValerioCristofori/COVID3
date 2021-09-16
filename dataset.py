@@ -17,7 +17,7 @@ index_country_name = 0
 
 def createPetlTables():
     arrayTables = []
-
+    # creazione di tre file temporanei
     with requests.Session() as s:
         for i in range(len(arrayUrls)):
             filename = 'temp'+str(i)+'.csv'

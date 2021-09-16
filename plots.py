@@ -12,28 +12,27 @@ min_date = 0
 max_date = 0
 
 def minMaxDate(df):
+    # trovo la prima e l'ultima data
     global min_date, max_date
     min_date = df.iloc[1]["Date"]
     max_date = df.iloc[len(df)-1]["Date"]
 
 
-
 def checkDate(date):
-    # Controllo se la data in input e' compresa nell'intervallo
+    # controllo se la data in input sta nell'intervallo
     if max_date < date or date < min_date:
         raise NameError('Date Error')
 
 
 def groupDateForMonths(ax, months):
-    # Ogni 7 giorni inserisco la label nell'asse x
+    # ogni 7 giorni inserisco la label nell'asse x
     fmt_half_year = mdates.MonthLocator(interval=months)
     ax.xaxis.set_major_locator(fmt_half_year)
 
 
 def plotNews(df):
-
     # graficare andamento di New Confirmed, New Recovered e New Deaths
-    # prendi input del paese da graficare
+    # prendo l'input del paese da graficare
     country = input("Inserisci il nome del paese per vedere l'andamento di New Confirmed, New Deaths, New Recovered: ")
     # if not df[df['Country'].str.contains(country)]:
     #     print("Il nome inserito non e' valido!")
@@ -47,6 +46,8 @@ def plotNews(df):
     ax.plot( x, df_country.loc[:, 'New Recovered'], "-b", label="New Recovered")
     ax.plot( x, df_country.loc[:, 'New Deaths'], "-r", label="New Deaths")
 
+    # per diminuire il numero di date sull'asse x
+    # scrivo la data ogni due mesi
     groupDateForMonths(ax, 2)
 
     plt.legend()
@@ -65,7 +66,7 @@ def plotNewDeathsGlobalTrend(df):
 
     x = df.loc[0:row-1, 'Date'].tolist()
 
-
+    # sommo le New Deaths raggruppando per l'attributo Date
     y = df.groupby(["Date"])["New Deaths"].sum()
     fig, ax = plt.subplots()
 
@@ -82,6 +83,11 @@ def plotNewDeathsGlobalTrend(df):
 
 def plotBar(df):
     date = input("Inserisci la data nella forma %YYYY/%mm/%dd per confrontare New Confirmed, New Deaths e New Recovered di ogni paese: ")
+    try:
+        checkDate(date)
+    except NameError:
+        print("La data inserita non rientra nel range possibile")
+        exit(-1)
     df_date = df[df['Date'] == date]
 
     # popolo x con i paesi e le y con new confirmed, new recovered e new deaths
@@ -124,20 +130,12 @@ def plotBar(df):
     ax3.set_ylabel("New Deaths")
     ax3.legend()
 
-
     plt.show()
 
 def movingAverage(df):
-
     # costruire e graficare le medie mobili a 7, 14, 21, 28 giorni
-    # inserisco una data: costruisco un array di dati (quali dati? deaths? confirmed?)
 
-    # per le righe con stessa data sommo i confirmed, mi interessa solo quello, nient'altro
-    # l'array contiene, per ogni giorno, tutti i new confirmed nel mondo
-    # array.rolling(window = x).mean().plot() e ottengo la rolling average
-    # posso fare 4 grafici diversi per le 4 finestre diverse, basta chiamare ^ l'ultima funzione 4 volte con 4 x diverse
-
-    # potrebbe servire se voglio un solo grafico, oppure lascio 4 grafici con valore statico come ho fatto
+    # sommo i New Confirmed raggruppando per l'attributo Date
     df_sum = df.groupby(["Date"])["New Confirmed"].sum()
 
     # creazione 4 grafici di medie mobili
@@ -145,6 +143,7 @@ def movingAverage(df):
     plt.title("Media mobile globale finestra 7 giorni", color="black", loc="right")
     plt.ylabel("New Confirmed", color=color_label)
     plt.xlabel("Data", color=color_label)
+    # calcolo la rolling average con la seguente funzione
     df_sum.rolling(window=7).mean().plot()
     plt.grid(color=color_grid)
     plt.show()
@@ -189,7 +188,7 @@ def buildScatter(df):
         checkDate(dateToParse)
     except NameError:
         print("La data inserita non rientra nel range possibile")
-        exit(1)
+        exit(-1)
     date = parseDate(dateToParse)
     x = []
     y = []
@@ -198,10 +197,11 @@ def buildScatter(df):
     colors = np.random.rand(279)
     df_date = df.filter(items=[ 'Country/Region', 'Long', 'Lat', date])
     #print(df_date)
+    #creo array per salvare i valori di ogni punto dato da longitudine e latitudine
     for row in range(0, len(df_date)):
         x.append( df_date.iloc[row]['Long'])
         y.append( df_date.iloc[row]['Lat'])
-        area.append( df_date.iloc[row][date]*0.001)
+        area.append( df_date.iloc[row][date]*0.001) #0.001 per diminuire la scala e rendere il grafico leggibile
     fig, axs = plt.subplots()
 
     axs.scatter( x, y, area, c=colors, label="Confirmed")
@@ -214,8 +214,8 @@ def buildScatter(df):
     plt.show()
 
 
-
 def buildPlots(df):
+    #
     minMaxDate(df)
     plotNews(df)
     plotNewDeathsGlobalTrend(df)
