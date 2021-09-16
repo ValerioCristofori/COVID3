@@ -47,7 +47,7 @@ def plotNews(df):
     ax.plot( x, df_country.loc[:, 'New Recovered'], "-b", label="New Recovered")
     ax.plot( x, df_country.loc[:, 'New Deaths'], "-r", label="New Deaths")
 
-    groupDateForMonths(ax, 1)
+    groupDateForMonths(ax, 2)
 
     plt.legend()
     plt.title("Andamento di %s " % country, color="black")
@@ -70,7 +70,7 @@ def plotNewDeathsGlobalTrend(df):
     fig, ax = plt.subplots()
 
     ax.plot(x, y, "-b", label="New Deaths")
-    groupDateForMonths(ax, 1)
+    groupDateForMonths(ax, 2)
 
     plt.legend()
     plt.title("Andamento dei Nuovi Morti globali ", color="black")
@@ -83,7 +83,6 @@ def plotNewDeathsGlobalTrend(df):
 def plotBar(df):
     date = input("Inserisci la data nella forma %YYYY/%mm/%dd per confrontare New Confirmed, New Deaths e New Recovered di ogni paese: ")
     df_date = df[df['Date'] == date]
-    #print(df_date)
 
     # popolo x con i paesi e le y con new confirmed, new recovered e new deaths
     x = []
@@ -96,39 +95,33 @@ def plotBar(df):
         y1.append(df_date.iloc[row]['New Confirmed'])
         y2.append(df_date.iloc[row]['New Recovered'])
         y3.append(df_date.iloc[row]['New Deaths'])
-   # print(x)
+    #print(x)
     #print(y1)
     #print(y2)
     #print(y3)
 
-    # se commento la parte dei subplots viene un grafico con tutti e tre i valori insieme sulla stessa colonna
-
     x_ticks_labels = x
-    fig, (ax1, ax2, ax3) = plt.subplots(3,1)
+    fig, (ax1, ax2, ax3) = plt.subplots(3,1, constrained_layout=True)
     x_pos = np.arange(len(x))
 
     ax1.bar(x_pos, y1, color = 'g', label="New Confirmed")
     ax1.set_xticks(x_pos)
-    ax1.set_xticklabels(x_ticks_labels, rotation='vertical')
+    ax1.set_xticklabels(x_ticks_labels, fontsize=5, rotation=90)
     ax1.title.set_text('New Confirmed')
-    ax1.set_xlabel("Paese")
-    ax1.set_ylabel("NC")
+    ax1.set_ylabel("New Confirmed")
     ax1.legend()
 
     ax2.bar(x_pos, y2, color = 'b', label="New Recovered")
     ax2.set_xticks(x_pos)
-    ax2.set_xticklabels(x_ticks_labels, rotation='vertical')
-    ax2.title.set_text('New Recovered')
-    ax2.set_xlabel("Paese")
-    ax2.set_ylabel("NR")
+    ax2.set_xticklabels(x_ticks_labels, fontsize=5, rotation=90)
+    ax2.set_ylabel("New Recovered")
     ax2.legend()
 
     ax3.bar(x_pos, y3, color = 'r', label="New Deaths")
     ax3.set_xticks(x_pos)
-    ax3.set_xticklabels(x_ticks_labels, rotation='vertical')
+    ax3.set_xticklabels(x_ticks_labels, fontsize=5, rotation=90)
     ax3.title.set_text('New Deaths')
-    ax3.set_xlabel("Paese")
-    ax3.set_ylabel("ND")
+    ax3.set_ylabel("New Deaths")
     ax3.legend()
 
 
@@ -153,24 +146,28 @@ def movingAverage(df):
     plt.ylabel("New Confirmed", color=color_label)
     plt.xlabel("Data", color=color_label)
     df_sum.rolling(window=7).mean().plot()
+    plt.grid(color=color_grid)
     plt.show()
 
     plt.title("Media mobile globale finestra 14 giorni", color="black", loc="right")
     plt.ylabel("New Confirmed", color=color_label)
     plt.xlabel("Data", color=color_label)
     df_sum.rolling(window=14).mean().plot()
+    plt.grid(color=color_grid)
     plt.show()
 
     plt.title("Media mobile globale finestra 21 giorni", color="black", loc="right")
     plt.ylabel("New Confirmed", color=color_label)
     plt.xlabel("Data", color=color_label)
     df_sum.rolling(window=21).mean().plot()
+    plt.grid(color=color_grid)
     plt.show()
 
     plt.title("Media mobile globale finestra 28 giorni", color="black", loc="right")
     plt.ylabel("New Confirmed", color=color_label)
     plt.xlabel("Data", color=color_label)
     df_sum.rolling(window=28).mean().plot()
+    plt.grid(color=color_grid)
     plt.show()
 
 
