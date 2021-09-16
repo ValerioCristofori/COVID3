@@ -8,8 +8,21 @@ import pandas as pd
 
 color_grid = "grey"
 color_label = "black"
-min_date = '2020/01/22'
-max_date = '2020/03/23'
+min_date = 0
+max_date = 0
+
+def minMaxDate(df):
+    global min_date, max_date
+    min_date = df.iloc[1]["Date"]
+    max_date = df.iloc[len(df)-1]["Date"]
+
+
+
+def checkDate(date):
+    # Controllo se la data in input e' compresa nell'intervallo
+    if max_date < date or date < min_date:
+        raise NameError('Date Error')
+
 
 def groupDateForMonths(ax, months):
     # Ogni 7 giorni inserisco la label nell'asse x
@@ -21,7 +34,7 @@ def plotNews(df):
 
     # graficare andamento di New Confirmed, New Recovered e New Deaths
     # prendi input del paese da graficare
-    country = input("Inserisci il nome del paese per vedere l'andamento: ")
+    country = input("Inserisci il nome del paese per vedere l'andamento di New Confirmed, New Deaths, New Recovered: ")
     # if not df[df['Country'].str.contains(country)]:
     #     print("Il nome inserito non e' valido!")
     #     exit(-1)
@@ -52,13 +65,9 @@ def plotNewDeathsGlobalTrend(df):
 
     x = df.loc[0:row-1, 'Date'].tolist()
 
-    y = []
-    for j in range(0, len(x)):
-        tot = 0
-        for i in range(j, len(df), len(x)):
-            if df.iloc[i]['Date'] == x[j]:
-                tot = tot + df.iloc[i]['New Deaths']
-        y.append(tot)
+
+    y = df.groupby(["Date"])["New Deaths"].sum()
+    print()
     fig, ax = plt.subplots()
 
     ax.plot(x, y, "-b", label="New Deaths")
@@ -95,22 +104,34 @@ def plotBar(df):
 
     # se commento la parte dei subplots viene un grafico con tutti e tre i valori insieme sulla stessa colonna
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
-    ax1.plot(x, y1, "-g", label="New Confirmed")
-    ax2.plot(x, y2, "-b", label="New Recovered")
-    ax3.plot(x, y3, "-r", label="New Deaths")
-
-    plt.bar(x, y1, label="New Confirmed")
-    plt.bar(x, y2, label="New Recovered")
-    plt.bar(x, y3, label="New Deaths")
+    x_ticks_labels = x
+    fig, (ax1, ax2, ax3) = plt.subplots(3,1)
     x_pos = np.arange(len(x))
-    plt.xticks(x_pos, x)
 
-    plt.title("Andamento globale in data %s" % date, color="black", loc="right")
-    plt.ylabel("Totale", color=color_label)
-    plt.xlabel("Paese", color=color_label)
+    ax1.bar(x_pos, y1, color = 'g', label="New Confirmed")
+    ax1.set_xticks(x_pos)
+    ax1.set_xticklabels(x_ticks_labels, rotation='vertical')
+    ax1.title.set_text('New Confirmed')
+    ax1.set_xlabel("Paese")
+    ax1.set_ylabel("NC")
+    ax1.legend()
 
-    plt.legend()
+    ax2.bar(x_pos, y2, color = 'b', label="New Recovered")
+    ax2.set_xticks(x_pos)
+    ax2.set_xticklabels(x_ticks_labels, rotation='vertical')
+    ax2.title.set_text('New Recovered')
+    ax2.set_xlabel("Paese")
+    ax2.set_ylabel("NR")
+    ax2.legend()
+
+    ax3.bar(x_pos, y3, color = 'r', label="New Deaths")
+    ax3.set_xticks(x_pos)
+    ax3.set_xticklabels(x_ticks_labels, rotation='vertical')
+    ax3.title.set_text('New Deaths')
+    ax3.set_xlabel("Paese")
+    ax3.set_ylabel("ND")
+    ax3.legend()
+
 
     plt.show()
 
@@ -119,37 +140,13 @@ def movingAverage(df):
     # costruire e graficare le medie mobili a 7, 14, 21, 28 giorni
     # inserisco una data: costruisco un array di dati (quali dati? deaths? confirmed?)
 
-    # simple moving average = somma dei data points recenti e li divido per il periodo di tempo
-    # pandas.Series.rolling()
-
     # per le righe con stessa data sommo i confirmed, mi interessa solo quello, nient'altro
     # l'array contiene, per ogni giorno, tutti i new confirmed nel mondo
     # array.rolling(window = x).mean().plot() e ottengo la rolling average
     # posso fare 4 grafici diversi per le 4 finestre diverse, basta chiamare ^ l'ultima funzione 4 volte con 4 x diverse
 
-    # window = input ("Inserisci la finestra temporale: ")
     # potrebbe servire se voglio un solo grafico, oppure lascio 4 grafici con valore statico come ho fatto
-    # print(df)
     df_sum = df.groupby(["Date"])["New Confirmed"].sum()
-    # print(df_sum)
-
-    ##### su questo c'ho perso tempo: il risultato e' un bel grafico ma non so se serve!
-
-    # ho le righe con data e somma di new confirmed
-    # x = []
-    # y = []
-    #
-    # for row in df_sum.iteritems():
-    #     x.append(row[0])
-    #     y.append(row[1])
-    # #
-    # print(x)
-    # print(y)
-
-    # fig, ax = plt.subplots()
-    # ax.plot(x, y, "-g", label="New Confirmed")
-
-    ##########
 
     # creazione 4 grafici di medie mobili
 
@@ -178,18 +175,26 @@ def movingAverage(df):
     plt.show()
 
 
-def buildPlots(df):
-    plotNews(df)
-    plotNewDeathsGlobalTrend(df)
-    plotBar(df)
-    movingAverage(df)
-
+def parseDate(dateToParse):
+    # Parse della data dalla forma YYYY/mm/dd alla forma m/d/YY
+    tokens = dateToParse.split("/")
+    year = tokens[0][2:4]
+    month = tokens[1]
+    day = tokens[2]
+    if month[0] == "0":
+        month = month[1]
+    if day[0] == "0":
+        day = day[1]
+    return month + "/" + day + "/" + year
 
 def buildScatter(df):
-    date = input("Inserisci la data nella forma %m/%d/%YY: ")
-    # if not df[df['Country'].str.contains(country)]:
-    #     print("Il nome inserito non e' valido!")
-    #     exit(-1)
+    dateToParse = input("Inserisci la data nella forma %YYYY/%mm/%dd per vedere la situazione globale di Confirmed: ")
+    try:
+        checkDate(dateToParse)
+    except NameError:
+        print("La data inserita non rientra nel range possibile")
+        exit(1)
+    date = parseDate(dateToParse)
     x = []
     y = []
     area = []
@@ -200,7 +205,7 @@ def buildScatter(df):
     for row in range(0, len(df_date)):
         x.append( df_date.iloc[row]['Long'])
         y.append( df_date.iloc[row]['Lat'])
-        area.append( df_date.iloc[row][date])
+        area.append( df_date.iloc[row][date]*0.001)
     fig, axs = plt.subplots()
 
     axs.scatter( x, y, area, c=colors, label="Confirmed")
@@ -212,3 +217,11 @@ def buildScatter(df):
 
     plt.show()
 
+
+
+def buildPlots(df):
+    minMaxDate(df)
+    plotNews(df)
+    plotNewDeathsGlobalTrend(df)
+    plotBar(df)
+    movingAverage(df)
