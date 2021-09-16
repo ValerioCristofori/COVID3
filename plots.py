@@ -67,7 +67,6 @@ def plotNewDeathsGlobalTrend(df):
 
 
     y = df.groupby(["Date"])["New Deaths"].sum()
-    print()
     fig, ax = plt.subplots()
 
     ax.plot(x, y, "-b", label="New Deaths")
@@ -82,9 +81,9 @@ def plotNewDeathsGlobalTrend(df):
     plt.show()
 
 def plotBar(df):
-    date = input("Inserisci la data nella forma %YYYY/%mm/%dd: ")
+    date = input("Inserisci la data nella forma %YYYY/%mm/%dd per confrontare New Confirmed, New Deaths e New Recovered di ogni paese: ")
     df_date = df[df['Date'] == date]
-    print(df_date)
+    #print(df_date)
 
     # popolo x con i paesi e le y con new confirmed, new recovered e new deaths
     x = []
@@ -97,10 +96,10 @@ def plotBar(df):
         y1.append(df_date.iloc[row]['New Confirmed'])
         y2.append(df_date.iloc[row]['New Recovered'])
         y3.append(df_date.iloc[row]['New Deaths'])
-    print(x)
-    print(y1)
-    print(y2)
-    print(y3)
+   # print(x)
+    #print(y1)
+    #print(y2)
+    #print(y3)
 
     # se commento la parte dei subplots viene un grafico con tutti e tre i valori insieme sulla stessa colonna
 
@@ -201,7 +200,7 @@ def buildScatter(df):
     np.random.seed(19680801)
     colors = np.random.rand(279)
     df_date = df.filter(items=[ 'Country/Region', 'Long', 'Lat', date])
-    print(df_date)
+    #print(df_date)
     for row in range(0, len(df_date)):
         x.append( df_date.iloc[row]['Long'])
         y.append( df_date.iloc[row]['Lat'])
